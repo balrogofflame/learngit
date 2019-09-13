@@ -1,3 +1,4 @@
 testing git
 know i'm testing now
 testing stage
+creating a new branch is quick
