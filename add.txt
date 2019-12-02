@@ -1,0 +1,67 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long
+#define N 100010
+char s[N];
+int n,l[N],r[N],la[27],vl[N],vr[N],vf[N][27],vg[N][27],pr[N][27],va,sf[N][27],f[20][N],g[20][N],fs[20][N],gs[20][N];
+signed main(){
+	cin>>s;
+	n=strlen(s);
+	for(int i=0;i<n;i++)
+		s[i]-='a'; // char in string -> digit
+	for(int i=0;i<n;i++){ // for every letter in string "s"
+		l[i]=la[s[i]]; // l[i] stores the last existant position of s[i]
+		la[s[i]]=i; // change the last existant position of letter s[i] to i
+		memcpy(pr[i],la,sizeof(la)); // store all the last existant letter info before position i to pr
+		sort(pr[i],pr[i]+26,greater<int>()); // sort in a great to less way
+		pr[i][26]=-1; // unknown
+	}
+	for(int i=0;i<26;i++)la[i]=n-1; // now change the last existant array to reverse defualt
+	for(int i=n-1;~i;i--){ // for every letter in string "s" (reverse)
+		r[i]=la[s[i]]; 
+		la[s[i]]=i;
+		memcpy(sf[i],la,sizeof(la));
+		sort(sf[i],sf[i]+26); // all same as above, reverse is the difference
+		sf[i][26]=n; // ethier unknown
+	}
+	for(int i=0;i<n;i++){
+		vl[i]=vr[i]=i;
+		vf[i][0]=vg[i][0]=i;
+		for(int j=0;j<26;j++){
+			vf[i][j+1]=min(vf[i][j],l[sf[i][j]]); // left bound of (j+1) distinct letters
+			vg[i][j+1]=max(vg[i][j],r[pr[i][j]]); // right bound of (j+1) distinct letters
+		}
+	}
+	for(int t=1;t<=26;t++){
+		for(int i=0;i<n;i++){
+			f[0][i]=vf[i][t];
+			g[0][i]=vg[i][t];
+			fs[0][i]=gs[0][i]=i;
+		}
+		for(int i=1;(1<<i)<=n;i++){
+			for(int j=0;j<n;j++){
+				f[i][j]=f[i-1][f[i-1][j]];
+				g[i][j]=g[i-1][g[i-1][j]];
+				fs[i][j]=fs[i-1][j]+fs[i-1][f[i-1][j]];
+				gs[i][j]=gs[i-1][j]+gs[i-1][g[i-1][j]];
+			}
+		}
+		for(int i=0;i<n;i++){
+			for(int j=31-__builtin_clz(n);~j;j--){
+				int nl=f[j][vl[i]],nr=g[j][vr[i]];
+				if(nr<sf[nl][t]){
+					va+=((n-1ll)<<j)+fs[j][vl[i]]-gs[j][vr[i]];
+					vl[i]=nl;
+					vr[i]=nr;
+				}
+			}
+			if(vr[i]<sf[vl[i]][t]){
+				va+=n-1+vl[i]-vr[i];
+				vl[i]=vf[vl[i]][t];
+				vr[i]=vg[vr[i]][t];
+			}
+		}
+	}
+	cout<<va;
+}
+
